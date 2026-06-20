@@ -1,0 +1,11 @@
+node_modules/
+.vscode/
+.env
+
+*.log
+*.out.log
+*.err.log
+
+server/uploads/
+dist/
+build/

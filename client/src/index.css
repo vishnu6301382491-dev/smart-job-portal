@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --page-bg: #f8fafc;
+    --page-bg-alt: #e2e8f0;
+    --page-text: #0f172a;
+    --page-text-soft: #475569;
+    --page-text-muted: #64748b;
+    --surface: rgba(255, 255, 255, 0.92);
+    --surface-strong: rgba(255, 255, 255, 0.98);
+    --surface-soft: rgba(241, 245, 249, 0.9);
+    --border-color: rgba(148, 163, 184, 0.28);
+    --selection-bg: rgba(34, 211, 238, 0.18);
+    --selection-text: #082f49;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    --page-bg: #020617;
+    --page-bg-alt: #0f172a;
+    --page-text: #f8fafc;
+    --page-text-soft: #cbd5e1;
+    --page-text-muted: #94a3b8;
+    --surface: rgba(15, 23, 42, 0.64);
+    --surface-strong: rgba(15, 23, 42, 0.88);
+    --surface-soft: rgba(255, 255, 255, 0.06);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --selection-bg: rgba(34, 211, 238, 0.25);
+    --selection-text: #ffffff;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen font-body;
+    background-color: var(--page-bg);
+    color: var(--page-text);
+    background-image:
+      radial-gradient(circle at top, color-mix(in srgb, var(--page-text-soft) 16%, transparent), transparent 30%),
+      linear-gradient(180deg, var(--page-bg), var(--page-bg-alt));
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-text);
+  }
+
+  * {
+    border-color: var(--border-color);
+  }
+
+  a {
+    @apply transition-colors;
+  }
+
+  html:not(.dark) .text-white,
+  html:not(.dark) .text-slate-100,
+  html:not(.dark) .text-slate-200 {
+    color: var(--page-text);
+  }
+
+  html:not(.dark) .text-slate-300 {
+    color: var(--page-text-soft);
+  }
+
+  html:not(.dark) .text-slate-400,
+  html:not(.dark) .text-slate-500 {
+    color: var(--page-text-muted);
+  }
+
+  html:not(.dark) .bg-slate-950,
+  html:not(.dark) .bg-slate-950\/80,
+  html:not(.dark) .bg-slate-950\/40,
+  html:not(.dark) .bg-slate-950\/30 {
+    background-color: var(--surface);
+  }
+
+  html:not(.dark) .bg-white\/5 {
+    background-color: var(--surface-strong);
+  }
+
+  html:not(.dark) .bg-white\/10 {
+    background-color: var(--surface-soft);
+  }
+
+  html:not(.dark) .border-white\/10,
+  html:not(.dark) .border-slate-800 {
+    border-color: var(--border-color);
+  }
+
+  html:not(.dark) .hover\:bg-white\/5:hover,
+  html:not(.dark) .hover\:bg-white\/15:hover {
+    background-color: var(--surface-soft);
+  }
+
+  html:not(.dark) .hover\:text-white:hover {
+    color: var(--page-text);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply border backdrop-blur-xl shadow-glow;
+    background-color: var(--surface);
+    border-color: var(--border-color);
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply text-2xl font-semibold tracking-tight sm:text-3xl;
+    color: var(--page-text);
+  }
+
+  .section-subtitle {
+    @apply mt-2 max-w-2xl text-sm leading-6 sm:text-base;
+    color: var(--page-text-soft);
+  }
+}
