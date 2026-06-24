@@ -20,6 +20,13 @@ dotenv.config();
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const defaultClientOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://vishnu6301382491-dev.github.io",
+];
 const expandOrigin = (origin) => {
   const variants = new Set([origin]);
 
@@ -43,7 +50,7 @@ const expandOrigin = (origin) => {
 };
 
 const allowedOrigins = [...new Set(
-  (process.env.CLIENT_URL || "http://localhost:5173")
+  (process.env.CLIENT_URL || defaultClientOrigins.join(","))
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean)

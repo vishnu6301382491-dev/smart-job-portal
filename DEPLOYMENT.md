@@ -35,8 +35,10 @@ Optional values:
 
 Create `client/.env` from [`client/.env.example`](./client/.env.example).
 
-Required value:
+Optional override:
 - `VITE_API_BASE_URL`
+
+If you do not set it, the production client build will fall back to the Render API URL used by this project.
 
 ## 3. MongoDB Atlas setup
 
@@ -87,15 +89,15 @@ Use the following values:
 - Build command: `npm run build`
 - Output directory: `dist`
 
-Set this Vercel environment variable:
+Set this Vercel environment variable if you want to override the default API URL:
 - `VITE_API_BASE_URL=https://your-render-app.onrender.com/api`
 
 ## 7. Final wiring
 
 1. Deploy the backend first.
-2. Copy the Render URL into `client/.env` as `VITE_API_BASE_URL`.
+2. Optionally copy the Render URL into `client/.env` as `VITE_API_BASE_URL` if you want to override the default.
 3. Deploy the frontend.
-4. Update the Render `CLIENT_URL` to the final Vercel URL.
+4. Update the Render `CLIENT_URL` to the final frontend URL.
 5. Redeploy the backend if you changed `CLIENT_URL`.
 
 ## 8. Verify the deployment
