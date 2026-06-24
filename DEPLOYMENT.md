@@ -84,10 +84,13 @@ After deployment, copy the Render service URL for the client API base URL.
 ## 6. Frontend deployment on Vercel
 
 Use the following values:
+- Git branch: `main`
 - Root directory: `client`
 - Framework preset: `Vite`
 - Build command: `npm run build`
 - Output directory: `dist`
+
+If you instead deploy from the repository root, the included [`vercel.json`](./vercel.json) uses the same build output and SPA routing.
 
 Set this Vercel environment variable if you want to override the default API URL:
 - `VITE_API_BASE_URL=https://your-render-app.onrender.com/api`
