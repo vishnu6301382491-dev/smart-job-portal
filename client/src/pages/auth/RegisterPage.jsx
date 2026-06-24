@@ -27,6 +27,10 @@ const RegisterPage = () => {
     location.state?.from?.pathname || (user?.role === "employer" ? "/employer" : "/dashboard");
 
   useEffect(() => {
+    void authService.health().catch(() => {
+      // Background warm-up only.
+    });
+
     if (authReady && isAuthenticated) {
       navigate(redirectTo, { replace: true });
     }

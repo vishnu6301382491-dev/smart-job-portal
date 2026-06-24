@@ -38,6 +38,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let cancelled = false;
 
+    const warmBackend = async () => {
+      try {
+        await authService.health();
+      } catch {
+        // Ignore warm-up failures; the real request will surface any problems.
+      }
+    };
+
     const hydrateAuth = async () => {
       const storedToken = localStorage.getItem(TOKEN_KEY);
 
@@ -73,6 +81,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    void warmBackend();
     hydrateAuth();
 
     return () => {

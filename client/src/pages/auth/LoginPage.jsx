@@ -18,6 +18,10 @@ const LoginPage = () => {
   const redirectTo = location.state?.from?.pathname || "/dashboard";
 
   useEffect(() => {
+    void authService.health().catch(() => {
+      // Background warm-up only.
+    });
+
     if (authReady && isAuthenticated) {
       navigate(redirectTo, { replace: true });
     }
