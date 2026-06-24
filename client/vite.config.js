@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig({
-  base: "/smart_job_portal/",
+  base: "/smart-job-portal/",
   plugins: [react()],
   resolve: {
     alias: {
