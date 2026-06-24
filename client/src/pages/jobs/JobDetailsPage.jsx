@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Loader } from "../../components/ui/Loader";
 import { jobService } from "../../services/jobService";
+import { userService } from "../../services/userService";
 import { getErrorMessage } from "../../services/error";
 import { useAuth } from "../../context/AuthContext";
 
@@ -26,13 +27,17 @@ const JobDetailsPage = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, updateUser } = useAuth();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [applying, setApplying] = useState(false);
   const [applicationMessage, setApplicationMessage] = useState("");
+  const [bookmarking, setBookmarking] = useState(false);
+  const [savedMessage, setSavedMessage] = useState("");
   const [form, setForm] = useState({ coverLetter: "" });
+  const isExternalJob = Boolean(job?.external);
+  const isSaved = Boolean(job && Array.isArray(user?.savedJobs) && user.savedJobs.includes(job._id));
   const canEditJob =
     job && isAuthenticated && (user?.role === "admin" || String(job.postedBy?._id || job.postedBy) === String(user?._id));
 
@@ -92,6 +97,30 @@ const JobDetailsPage = () => {
     }
   };
 
+  const handleToggleSavedJob = async () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    setBookmarking(true);
+    setSavedMessage("");
+
+    try {
+      const { data } = isSaved ? await userService.removeSavedJob(id) : await userService.saveJob(id);
+
+      if (data.user) {
+        updateUser(data.user);
+      }
+
+      setSavedMessage(isSaved ? "Removed from saved jobs." : "Saved for later.");
+    } catch (err) {
+      setSavedMessage(getErrorMessage(err, "Unable to update saved jobs"));
+    } finally {
+      setBookmarking(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="page-shell py-12">
@@ -106,7 +135,17 @@ const JobDetailsPage = () => {
     actions.push({ label: "Edit Job", href: `/employer/jobs/${id}/edit`, variant: "secondary" });
   }
 
-  if (job && (!isAuthenticated || ["jobseeker", "admin"].includes(user?.role))) {
+  if (job) {
+    actions.push({
+      label: bookmarking ? "Saving..." : isSaved ? "Unsave Job" : "Save Job",
+      variant: "secondary",
+      onClick: handleToggleSavedJob,
+    });
+  }
+
+  if (job && isExternalJob && job.sourceUrl) {
+    actions.push({ label: "Open Original Listing", href: job.sourceUrl, variant: "secondary" });
+  } else if (job && (!isAuthenticated || ["jobseeker", "admin"].includes(user?.role))) {
     actions.push({ label: "Apply Now", href: "#apply" });
   }
 
@@ -131,6 +170,7 @@ const JobDetailsPage = () => {
           <section className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
               <div className="flex flex-wrap items-center gap-2">
+                {isExternalJob ? <Badge variant="warning">{job.sourceName || "External source"}</Badge> : null}
                 <Badge variant="info">{job.jobType}</Badge>
                 <Badge variant="neutral">{job.location}</Badge>
                 <Badge variant="success">{formatSalary(job)}</Badge>
@@ -138,6 +178,11 @@ const JobDetailsPage = () => {
               <h2 className="mt-4 text-3xl font-semibold text-white">{job.title}</h2>
               <p className="mt-2 text-sm text-slate-400">{job.employer?.companyName || "Independent employer"}</p>
               <p className="mt-5 text-sm leading-6 text-slate-300 sm:text-base">{job.description}</p>
+              {isExternalJob && job.sourceUrl ? (
+                <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                  This listing is synced from an external source. Use the original listing to apply.
+                </div>
+              ) : null}
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -177,10 +222,18 @@ const JobDetailsPage = () => {
               </div>
             </div>
 
+            {savedMessage ? (
+              <div className="rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-4 text-sm text-cyan-100">
+                {savedMessage}
+              </div>
+            ) : null}
+
             <div id="apply" className="rounded-3xl border border-white/10 bg-white/5 p-6">
               <p className="text-sm font-semibold text-white">Apply now</p>
               <p className="mt-2 text-sm text-slate-400">
-                {isAuthenticated
+                {isExternalJob
+                  ? "This listing comes from an external source, so apply on the original website."
+                  : isAuthenticated
                   ? "Submit a short cover letter and apply directly from this page."
                   : "Sign in first to submit your application."}
               </p>
@@ -197,7 +250,16 @@ const JobDetailsPage = () => {
                 </div>
               ) : null}
 
-              {isAuthenticated && ["jobseeker", "admin"].includes(user?.role) ? (
+              {isExternalJob && job.sourceUrl ? (
+                <div className="mt-4 space-y-3">
+                  <Button as="a" href={job.sourceUrl} target="_blank" rel="noreferrer" className="w-full">
+                    Open Original Listing
+                  </Button>
+                  <Button as={Link} to="/jobs" variant="secondary" className="w-full">
+                    Back to jobs
+                  </Button>
+                </div>
+              ) : isAuthenticated && ["jobseeker", "admin"].includes(user?.role) ? (
                 <form className="mt-4 space-y-3" onSubmit={handleApply}>
                   <textarea
                     className="min-h-36 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"

@@ -4,6 +4,8 @@ import Employer from "../models/Employer.js";
 import Application from "../models/Application.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { fetchExternalJobs, getExternalJobById, isExternalJobId } from "../utils/externalJobs.js";
+import { notifyMatchingJobs, notifySavedJobDeletion, notifySavedJobFollowers } from "../utils/notificationAlerts.js";
 import {
   JOB_STATUSES,
   getJobHistoryAction,
@@ -26,16 +28,53 @@ const parseList = (value) => {
     .filter(Boolean);
 };
 
+const parseQueryList = (value) => {
+  if (!value) {
+    return [];
+  }
+
+  const items = Array.isArray(value) ? value : String(value).split(",");
+
+  return items.map((item) => String(item).trim()).filter(Boolean);
+};
+
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const buildJobQuery = (query) => {
   const filters = {};
+  const searchConditions = [];
 
   if (query.q) {
-    filters.$or = [
-      { title: { $regex: query.q, $options: "i" } },
-      { description: { $regex: query.q, $options: "i" } },
-      { category: { $regex: query.q, $options: "i" } },
-      { skills: { $in: [new RegExp(query.q, "i")] } },
-    ];
+    searchConditions.push({
+      $or: [
+        { title: { $regex: query.q, $options: "i" } },
+        { description: { $regex: query.q, $options: "i" } },
+        { category: { $regex: query.q, $options: "i" } },
+        { skills: { $in: [new RegExp(query.q, "i")] } },
+      ],
+    });
+  }
+
+  const selectedSkills = parseQueryList(query.skill ?? query.skills);
+  if (selectedSkills.length > 0) {
+    searchConditions.push({
+      $or: selectedSkills.flatMap((skill) => {
+        const escapedSkill = escapeRegex(skill);
+
+        return [
+          { skills: { $in: [new RegExp(escapedSkill, "i")] } },
+          { title: { $regex: escapedSkill, $options: "i" } },
+          { description: { $regex: escapedSkill, $options: "i" } },
+          { category: { $regex: escapedSkill, $options: "i" } },
+        ];
+      }),
+    });
+  }
+
+  if (searchConditions.length === 1) {
+    Object.assign(filters, searchConditions[0]);
+  } else if (searchConditions.length > 1) {
+    filters.$and = searchConditions;
   }
 
   if (query.location) {
@@ -64,15 +103,38 @@ const buildJobQuery = (query) => {
 };
 
 const listJobs = asyncHandler(async (req, res) => {
-  const jobs = await Job.find(buildJobQuery(req.query))
+  const [localJobs, externalJobs] = await Promise.all([
+    Job.find(buildJobQuery(req.query))
     .populate("employer", "companyName logoUrl location website industry")
     .populate("postedBy", "name email")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 }),
+    fetchExternalJobs(req.query),
+  ]);
+
+  const jobs = [
+    ...localJobs.map((job) => ({
+      ...job.toJSON(),
+      source: "local",
+      external: false,
+    })),
+    ...externalJobs,
+  ].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
   res.json({ jobs });
 });
 
 const getJobById = asyncHandler(async (req, res) => {
+  if (isExternalJobId(req.params.id)) {
+    const job = await getExternalJobById(req.params.id);
+
+    if (!job) {
+      throw new ApiError(404, "Job not found");
+    }
+
+    res.json({ job });
+    return;
+  }
+
   if (!mongoose.isValidObjectId(req.params.id)) {
     throw new ApiError(400, "Invalid job id");
   }
@@ -162,6 +224,15 @@ const createJob = asyncHandler(async (req, res) => {
     console.error("Failed to record job creation history:", error);
   });
 
+  if (job.status === "open") {
+    await notifyMatchingJobs({
+      job,
+      actorId: req.user._id,
+    }).catch((error) => {
+      console.error("Failed to send matching job notifications:", error);
+    });
+  }
+
   res.status(201).json({
     message: "Job posted successfully",
     job,
@@ -230,6 +301,16 @@ const updateJob = asyncHandler(async (req, res) => {
     console.error("Failed to record job update history:", error);
   });
 
+  if (changedFields.length > 0) {
+    await notifySavedJobFollowers({
+      job: updatedJob,
+      changes: changedFields,
+      actorId: req.user._id,
+    }).catch((error) => {
+      console.error("Failed to send saved job update notifications:", error);
+    });
+  }
+
   res.json({
     message: "Job updated successfully",
     job: updatedJob,
@@ -263,6 +344,12 @@ const deleteJob = asyncHandler(async (req, res) => {
     before: beforeSnapshot,
   }).catch((error) => {
     console.error("Failed to record job deletion history:", error);
+  });
+  await notifySavedJobDeletion({
+    job,
+    actorId: req.user._id,
+  }).catch((error) => {
+    console.error("Failed to send saved job deletion notifications:", error);
   });
   await job.deleteOne();
 

@@ -1,0 +1,18 @@
+spawned chrome pid=19200
+fetch fail 0: fetch failed
+fetch fail 1: fetch failed
+fetch fail 2: fetch failed
+fetch fail 3: fetch failed
+fetch fail 4: fetch failed
+fetch fail 5: fetch failed
+got list len=2
+page target={"type":"page","url":"about:blank","id":"EC5C5889AE4689E739CBAE411B5C45A1"}
+browser ws=ws://127.0.0.1:9226/devtools/browser/1c424ad9-3fec-4107-8718-de8e9095c856
+ws open
+attaching to target
+session=027CB91DB4AA865187410A9B20919EA7
+navigating to http://127.0.0.1:5173/
+ERROR Error: timeout waiting for Page.navigate
+    at Timeout._onTimeout (file:///D:/Smart%20Job/tmp_capture_site.mjs:106:18)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)

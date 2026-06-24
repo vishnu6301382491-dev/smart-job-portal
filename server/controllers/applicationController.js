@@ -4,8 +4,13 @@ import Employer from "../models/Employer.js";
 import Application from "../models/Application.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { isExternalJobId } from "../utils/externalJobs.js";
 
 const applyToJob = asyncHandler(async (req, res) => {
+  if (isExternalJobId(req.params.jobId)) {
+    throw new ApiError(400, "External job listings must be applied to on the source website");
+  }
+
   if (!mongoose.isValidObjectId(req.params.jobId)) {
     throw new ApiError(400, "Invalid job id");
   }
@@ -64,6 +69,10 @@ const getMyApplications = asyncHandler(async (req, res) => {
 });
 
 const getJobApplicants = asyncHandler(async (req, res) => {
+  if (isExternalJobId(req.params.jobId)) {
+    throw new ApiError(400, "External job listings do not have local applicants");
+  }
+
   if (!mongoose.isValidObjectId(req.params.jobId)) {
     throw new ApiError(400, "Invalid job id");
   }

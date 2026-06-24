@@ -42,6 +42,32 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    savedJobs: {
+      type: [String],
+      default: [],
+    },
+    notificationPrefs: {
+      savedJobUpdates: {
+        type: Boolean,
+        default: true,
+      },
+      matchedJobs: {
+        type: Boolean,
+        default: true,
+      },
+      emailDigests: {
+        type: Boolean,
+        default: false,
+      },
+      digestFrequency: {
+        type: String,
+        enum: ["daily", "weekly"],
+        default: "daily",
+      },
+      lastDigestSentAt: {
+        type: Date,
+      },
+    },
     bio: {
       type: String,
       trim: true,
@@ -94,4 +120,3 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 const User = mongoose.model("User", userSchema);
 
 export default User;
-

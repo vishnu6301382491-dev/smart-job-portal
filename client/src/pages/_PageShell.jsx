@@ -14,8 +14,15 @@ const PageShell = ({ title, description, actions = [], children }) => {
           <div className="mt-6 flex flex-wrap gap-3">
             {actions.map((action) =>
               action.href ? (
-                action.href.startsWith("#") ? (
-                  <Button key={action.label} as="a" href={action.href} variant={action.variant || "primary"}>
+                action.href.startsWith("#") || /^https?:\/\//i.test(action.href) ? (
+                  <Button
+                    key={action.label}
+                    as="a"
+                    href={action.href}
+                    target={/^https?:\/\//i.test(action.href) ? "_blank" : undefined}
+                    rel={/^https?:\/\//i.test(action.href) ? "noreferrer" : undefined}
+                    variant={action.variant || "primary"}
+                  >
                     {action.label}
                   </Button>
                 ) : (

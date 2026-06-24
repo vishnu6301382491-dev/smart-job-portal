@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PageShell from "../_PageShell";
 import { Input } from "../../components/ui/Input";
 import { Textarea } from "../../components/ui/Textarea";
+import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
@@ -19,6 +20,12 @@ const ProfilePage = () => {
     phone: "",
     skills: "",
     bio: "",
+    notificationPrefs: {
+      savedJobUpdates: true,
+      matchedJobs: true,
+      emailDigests: false,
+      digestFrequency: "daily",
+    },
   });
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +58,12 @@ const ProfilePage = () => {
           phone: profile.phone || "",
           skills: Array.isArray(profile.skills) ? profile.skills.join(", ") : "",
           bio: profile.bio || "",
+          notificationPrefs: {
+            savedJobUpdates: profile.notificationPrefs?.savedJobUpdates ?? true,
+            matchedJobs: profile.notificationPrefs?.matchedJobs ?? true,
+            emailDigests: profile.notificationPrefs?.emailDigests ?? false,
+            digestFrequency: profile.notificationPrefs?.digestFrequency || "daily",
+          },
         });
       } catch (err) {
         if (!cancelled) {
@@ -111,6 +124,16 @@ const ProfilePage = () => {
     } finally {
       setUploading(false);
     }
+  };
+
+  const updateNotificationPref = (key, value) => {
+    setForm((current) => ({
+      ...current,
+      notificationPrefs: {
+        ...current.notificationPrefs,
+        [key]: value,
+      },
+    }));
   };
 
   return (
@@ -239,6 +262,68 @@ const ProfilePage = () => {
             <div className="mt-4 flex justify-end">
               <Button type="submit" variant="secondary" disabled={uploading}>
                 {uploading ? "Uploading..." : "Upload Resume"}
+              </Button>
+            </div>
+          </form>
+
+          <form className="rounded-3xl border border-white/10 bg-white/5 p-6" onSubmit={handleSubmit}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Notifications</p>
+                <h4 className="mt-2 text-lg font-semibold text-white">Tune what alerts you receive</h4>
+              </div>
+              <Badge variant="info">{form.notificationPrefs.emailDigests ? "Email digest on" : "Email digest off"}</Badge>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={form.notificationPrefs.savedJobUpdates}
+                  onChange={(event) => updateNotificationPref("savedJobUpdates", event.target.checked)}
+                  className="h-4 w-4 rounded border-slate-700 bg-transparent text-cyan-400 focus:ring-cyan-400"
+                />
+                Saved job updates
+              </label>
+
+              <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={form.notificationPrefs.matchedJobs}
+                  onChange={(event) => updateNotificationPref("matchedJobs", event.target.checked)}
+                  className="h-4 w-4 rounded border-slate-700 bg-transparent text-cyan-400 focus:ring-cyan-400"
+                />
+                New matching jobs
+              </label>
+
+              <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/30 px-4 py-3 text-sm text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={form.notificationPrefs.emailDigests}
+                  onChange={(event) => updateNotificationPref("emailDigests", event.target.checked)}
+                  className="h-4 w-4 rounded border-slate-700 bg-transparent text-cyan-400 focus:ring-cyan-400"
+                />
+                Email digests
+              </label>
+
+              <Select
+                label="Digest frequency"
+                value={form.notificationPrefs.digestFrequency}
+                onChange={(event) => updateNotificationPref("digestFrequency", event.target.value)}
+                disabled={!form.notificationPrefs.emailDigests}
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+              </Select>
+            </div>
+
+            <p className="mt-4 text-sm text-slate-400">
+              Email digests group your unread alerts into a concise summary so you can catch up in one pass.
+            </p>
+
+            <div className="mt-4 flex justify-end">
+              <Button type="submit" variant="secondary" disabled={saving}>
+                {saving ? "Saving..." : "Save Notification Preferences"}
               </Button>
             </div>
           </form>

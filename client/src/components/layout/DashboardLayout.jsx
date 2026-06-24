@@ -16,6 +16,8 @@ export const DashboardLayout = () => {
     { to: "/dashboard", label: "Overview" },
     { to: "/profile", label: "Profile" },
     { to: "/applications", label: "Applied Jobs" },
+    { to: "/notifications", label: "Notifications" },
+    { to: "/saved-jobs", label: "Saved Jobs" },
   ];
 
   if (user?.role === "employer" || user?.role === "admin") {

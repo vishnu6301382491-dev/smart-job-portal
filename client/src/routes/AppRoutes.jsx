@@ -9,6 +9,8 @@ import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import JobsPage from "../pages/jobs/JobsPage";
 import JobDetailsPage from "../pages/jobs/JobDetailsPage";
+import SavedJobsPage from "../pages/jobs/SavedJobsPage";
+import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import AppliedJobsPage from "../pages/applications/AppliedJobsPage";
 import EmployerDashboardPage from "../pages/employer/EmployerDashboardPage";
@@ -33,6 +35,8 @@ export const AppRoutes = () => {
             <Route path="/dashboard" element={<ProfilePage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/applications" element={<AppliedJobsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/saved-jobs" element={<SavedJobsPage />} />
 
             <Route element={<RoleRoute allowedRoles={["employer", "admin"]} />}>
               <Route path="/employer" element={<EmployerDashboardPage />} />
@@ -59,4 +63,3 @@ export const AppRoutes = () => {
     </Routes>
   );
 };
-

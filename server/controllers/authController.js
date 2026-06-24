@@ -12,6 +12,8 @@ const sanitizeAuthUser = (user) => ({
   title: user.title,
   location: user.location,
   skills: user.skills,
+  savedJobs: user.savedJobs,
+  notificationPrefs: user.notificationPrefs,
   bio: user.bio,
   avatar: user.avatar,
   resumeUrl: user.resumeUrl,
