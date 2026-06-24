@@ -9,3 +9,8 @@ node_modules/
 server/uploads/
 dist/
 build/
+
+
+# Chrome debug profiles
+chrome-cdp-profile/
+chrome-cdp-profile-*/
