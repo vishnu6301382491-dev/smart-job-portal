@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="0; url=/smart-job-portal/" />
+    <script>
+      (function () {
+        var basePath = "/smart-job-portal/";
+        var path = window.location.pathname;
+        if (path.indexOf(basePath) === 0) {
+          path = path.slice(basePath.length);
+        }
+        path = path.replace(/^\/+/, "");
+        var target = basePath + "#/" + path + window.location.search + window.location.hash;
+        window.location.replace(target);
+      })();
+    </script>
+    <title>Smart Job Portal</title>
+  </head>
+  <body></body>
+</html>
